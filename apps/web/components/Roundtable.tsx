@@ -24,8 +24,8 @@ export function Roundtable({
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[520px]">
       {/* table */}
-      <div className="absolute inset-[16%] rounded-full border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent" />
-      <div className="absolute inset-[16%] rounded-full shadow-[inset_0_0_60px_rgba(124,92,255,0.15)]" />
+      <div className="absolute inset-[16%] rounded-full border rt-divider bg-gradient-to-br from-white/[0.04] to-transparent" />
+      <div className="absolute inset-[16%] rounded-full shadow-[inset_0_0_60px_rgba(124,92,255,0.12)]" />
 
       {/* center: user mic seat */}
       <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
@@ -37,13 +37,13 @@ export function Roundtable({
             className={`flex h-20 w-20 items-center justify-center rounded-full border-2 transition ${
               userSpeaking
                 ? "border-emerald-400 bg-emerald-400/20 shadow-[0_0_30px_rgba(16,185,129,0.6)]"
-                : "border-white/20 bg-white/5"
+                : "rt-divider rt-chip"
             }`}
           >
-            <MicIcon className={userSpeaking ? "text-emerald-300" : "text-slate-300"} />
+            <MicIcon className={userSpeaking ? "text-emerald-300" : "rt-muted"} />
           </div>
         </div>
-        <span className="mt-2 rounded-full bg-white/10 px-3 py-0.5 text-xs font-medium text-slate-200">
+        <span className="mt-2 rounded-full rt-chip rt-text px-3 py-0.5 text-xs font-medium">
           You {userSpeaking ? "· speaking" : ""}
         </span>
       </div>
@@ -67,7 +67,7 @@ export function Roundtable({
             <Avatar expert={e} size="xl" state={avatarState} />
             <span
               className={`mt-1.5 max-w-[96px] truncate rounded-full px-2 py-0.5 text-center text-[11px] font-medium transition ${
-                isActive ? "bg-white text-ink-950" : "text-slate-300"
+                isActive ? "rt-accent-chip" : "rt-muted"
               }`}
             >
               {e.name.split(" ")[0]}

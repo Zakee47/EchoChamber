@@ -61,15 +61,15 @@ export function SummaryModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div className="glass-strong relative flex max-h-[88vh] w-full max-w-3xl flex-col rounded-3xl">
-        <div className="flex items-start justify-between border-b border-white/10 p-6">
+      <div className="rt-surface rt-text relative flex max-h-[88vh] w-full max-w-3xl flex-col rounded-3xl">
+        <div className="flex items-start justify-between border-b rt-divider p-6">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-brand-400">
+            <div className="text-xs font-semibold uppercase tracking-wide rt-accent-text">
               Session summary
             </div>
-            <h2 className="mt-1 text-2xl font-bold">{topic}</h2>
+            <h2 className="mt-1 text-2xl font-bold rt-text">{topic}</h2>
           </div>
-          <Link href="/" className="rounded-full p-2 text-slate-400 hover:bg-white/10" aria-label="Close">
+          <Link href="/" className="rounded-full p-2 rt-muted rt-hover" aria-label="Close">
             ✕
           </Link>
         </div>
@@ -82,7 +82,7 @@ export function SummaryModal({
                   <span className="font-semibold" style={{ color: rosterMap.get(p.agentId)?.avatar.color }}>
                     {name(p.agentId)}:
                   </span>{" "}
-                  <span className="text-slate-300">{p.summary}</span>
+                  <span className="rt-muted">{p.summary}</span>
                 </li>
               ))}
             </ul>
@@ -98,14 +98,14 @@ export function SummaryModal({
           </div>
 
           <Block title="Recommended next steps">
-            <List items={summary.nextSteps} color="#7c5cff" ordered />
+            <List items={summary.nextSteps} color="var(--rt-accent)" ordered />
           </Block>
 
           {cards.length > 0 && (
             <Block title="Captured insight cards">
               <div className="flex flex-wrap gap-2">
                 {cards.map((c) => (
-                  <span key={c.id} className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
+                  <span key={c.id} className="rounded-full rt-chip rt-muted px-3 py-1 text-xs">
                     {c.text}
                   </span>
                 ))}
@@ -114,30 +114,30 @@ export function SummaryModal({
           )}
 
           <Block title={`Full transcript (${transcript.length} lines)`}>
-            <div className="max-h-56 space-y-2 overflow-y-auto rounded-xl bg-black/20 p-3">
+            <div className="max-h-56 space-y-2 overflow-y-auto rounded-xl rt-chip p-3">
               {transcript.map((t) => (
-                <p key={t.id} className="text-xs text-slate-300">
-                  <span className="font-semibold text-slate-100">{name(t.speaker)}:</span> {t.text}
+                <p key={t.id} className="text-xs rt-muted">
+                  <span className="font-semibold rt-text">{name(t.speaker)}:</span> {t.text}
                 </p>
               ))}
             </div>
           </Block>
         </div>
 
-        <div className="flex items-center justify-between border-t border-white/10 p-5">
-          <Link href="/" className="text-sm text-slate-400 transition hover:text-slate-200">
+        <div className="flex items-center justify-between border-t rt-divider p-5">
+          <Link href="/" className="text-sm rt-muted transition hover:opacity-80">
             ← Back to lobby
           </Link>
           <div className="flex gap-2">
             <button
               onClick={copy}
-              className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+              className="rounded-full border rt-divider rt-text rt-hover px-4 py-2 text-sm font-medium transition"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
             <button
               onClick={download}
-              className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink-950"
+              className="rt-accent-chip rounded-full px-4 py-2 text-sm font-semibold transition hover:brightness-105"
             >
               Download
             </button>
@@ -151,7 +151,7 @@ export function SummaryModal({
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h3 className="mb-2 text-sm font-semibold text-slate-200">{title}</h3>
+      <h3 className="mb-2 text-sm font-semibold rt-text">{title}</h3>
       {children}
     </section>
   );
@@ -161,7 +161,7 @@ function List({ items, color, ordered }: { items: string[]; color: string; order
   return (
     <ul className="space-y-1.5">
       {items.map((it, i) => (
-        <li key={i} className="flex gap-2 text-sm text-slate-300">
+        <li key={i} className="flex gap-2 text-sm rt-muted">
           <span className="mt-0.5 shrink-0 text-xs font-bold" style={{ color }}>
             {ordered ? `${i + 1}.` : "•"}
           </span>

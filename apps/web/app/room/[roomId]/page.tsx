@@ -7,6 +7,7 @@ import { getExperts } from "@/lib/api";
 import { MOCK_ROOMS } from "@/lib/mockData";
 import { loadDeepWikiExperts, loadRoomDraft } from "@/lib/clientStore";
 import { useRoom } from "@/lib/useRoom";
+import { useRoomTheme } from "@/lib/roomTheme";
 import { PushToTalk, speechSupported } from "@/lib/speech";
 import { Logo } from "@/components/TopBar";
 import { Roundtable } from "@/components/Roundtable";
@@ -63,6 +64,7 @@ function RoomInner({
   const panelExperts = panel.map((id) => rosterMap.get(id)).filter(Boolean) as RosterEntry[];
 
   const room = useRoom({ roomId, panel, roster, initialIntensity: config.intensity });
+  const { theme, toggle: toggleTheme } = useRoomTheme();
 
   const [userSpeaking, setUserSpeaking] = useState(false);
   const [interim, setInterim] = useState("");
@@ -108,30 +110,37 @@ function RoomInner({
   }
 
   return (
-    <main className="flex h-screen flex-col overflow-hidden">
+    <main className={`room-shell ${theme} rt-bg rt-text flex h-screen flex-col overflow-hidden`}>
       {/* header */}
-      <header className="flex items-center justify-between border-b border-white/5 px-6 py-3">
+      <header className="flex items-center justify-between border-b rt-divider px-6 py-3">
         <div className="flex items-center gap-4">
           <Logo />
-          <div className="hidden h-6 w-px bg-white/10 sm:block" />
+          <div className="hidden h-6 w-px rt-chip sm:block" />
           <div className="hidden min-w-0 sm:block">
-            <div className="truncate text-sm font-semibold text-slate-100">{config.topic}</div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <div className="truncate text-sm font-semibold rt-text">{config.topic}</div>
+            <div className="flex items-center gap-1.5 text-xs rt-soft">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" /> Live · {panelExperts.length} experts
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={toggleTheme}
+            className="rounded-full border rt-divider rt-muted rt-hover px-3 py-2 text-xs font-medium transition"
+            title={theme === "clubhouse" ? "Switch to Classic (dark) theme" : "Switch to Clubhouse (light) theme"}
+          >
+            {theme === "clubhouse" ? "◑ Classic" : "◐ Clubhouse"}
+          </button>
+          <button
             onClick={() => room.setMuted(!room.muted)}
-            className="rounded-full border border-white/10 px-3 py-2 text-sm text-slate-300 transition hover:bg-white/5"
+            className="rounded-full border rt-divider rt-muted rt-hover px-3 py-2 text-sm transition"
             title={room.muted ? "Unmute" : "Mute"}
           >
             {room.muted ? "🔇" : "🔊"}
           </button>
           <button
             onClick={room.endSession}
-            className="rounded-full bg-red-500/90 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
+            className="rt-danger rounded-full px-4 py-2 text-sm font-semibold transition hover:brightness-105"
           >
             End session
           </button>
@@ -142,7 +151,7 @@ function RoomInner({
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_360px]">
         {/* left: stage + transcript */}
         <div className="flex min-h-0 flex-col gap-4">
-          <div className="flex items-center justify-center rounded-3xl glass p-4">
+          <div className="flex items-center justify-center rounded-3xl rt-surface p-4">
             <Roundtable
               experts={panelExperts}
               speakerState={room.speakerState}
@@ -152,11 +161,11 @@ function RoomInner({
               onAdmit={room.admitHand}
             />
           </div>
-          <div className="flex min-h-0 flex-1 flex-col rounded-3xl glass p-4">
+          <div className="flex min-h-0 flex-1 flex-col rounded-3xl rt-surface p-4">
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-200">Live transcript</h3>
+              <h3 className="text-sm font-semibold rt-text">Live transcript</h3>
               {room.activeSpeaker && (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs rt-soft">
                   {rosterMap.get(room.activeSpeaker)?.name ?? room.activeSpeaker} speaking…
                 </span>
               )}
@@ -166,22 +175,22 @@ function RoomInner({
         </div>
 
         {/* right: cards */}
-        <aside className="hidden min-h-0 flex-col rounded-3xl glass p-4 lg:flex">
+        <aside className="hidden min-h-0 flex-col rounded-3xl rt-surface p-4 lg:flex">
           <CardsSidebar cards={room.cards} rosterMap={rosterMap} />
-          <div className="mt-4 border-t border-white/10 pt-4">
+          <div className="mt-4 border-t rt-divider pt-4">
             <IntensitySlider value={room.intensity} onChange={room.setIntensity} compact />
           </div>
         </aside>
       </div>
 
       {/* controls */}
-      <footer className="border-t border-white/5 bg-ink-950/60 px-4 py-3 backdrop-blur">
+      <footer className="rt-footer border-t px-4 py-3">
         <div className="mx-auto flex max-w-5xl flex-col gap-3">
           <div className="flex items-center gap-3">
             <select
               value={mentionId}
               onChange={(e) => setMentionId(e.target.value)}
-              className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-brand-400"
+              className="rt-field rounded-xl border px-3 py-2.5 text-sm outline-none"
             >
               <option value="">@ mention…</option>
               {panelExperts.map((e) => (
@@ -195,17 +204,17 @@ function RoomInner({
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendDraft()}
               placeholder={mentionId ? `Ask ${rosterMap.get(mentionId)?.name ?? ""}…` : "Type to the room…"}
-              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none focus:border-brand-400"
+              className="rt-field flex-1 rounded-xl border px-4 py-2.5 text-sm outline-none"
             />
             <button
               onClick={sendDraft}
-              className="rounded-xl bg-white/10 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/20"
+              className="rt-chip rt-text rt-hover rounded-xl px-4 py-2.5 text-sm font-medium transition"
             >
               Send
             </button>
             <button
               onClick={room.continueDebate}
-              className="hidden rounded-xl border border-white/10 px-4 py-2.5 text-sm text-slate-300 transition hover:bg-white/5 sm:block"
+              className="hidden rounded-xl border rt-divider rt-muted rt-hover px-4 py-2.5 text-sm transition sm:block"
             >
               Continue debate
             </button>
@@ -224,10 +233,8 @@ function RoomInner({
                 e.preventDefault();
                 stopTalking();
               }}
-              className={`flex items-center gap-3 rounded-full px-8 py-3.5 text-sm font-semibold transition ${
-                userSpeaking
-                  ? "bg-emerald-500 text-white shadow-[0_0_40px_rgba(16,185,129,0.6)]"
-                  : "bg-gradient-to-r from-brand-400 to-brand-600 text-white shadow-lg shadow-brand/30 hover:brightness-110"
+              className={`flex items-center gap-3 rounded-full px-8 py-3.5 text-sm font-semibold transition hover:brightness-110 ${
+                userSpeaking ? "rt-ptt-live" : "rt-ptt"
               }`}
             >
               <span className={`h-2.5 w-2.5 rounded-full ${userSpeaking ? "animate-pulse bg-white" : "bg-white/80"}`} />
@@ -235,7 +242,7 @@ function RoomInner({
             </button>
           </div>
           {userSpeaking && (
-            <p className="text-center text-xs text-slate-400">
+            <p className="text-center text-xs rt-muted">
               {interim || (supported ? "Listening…" : "Speech recognition unavailable — release to send a sample prompt or type below.")}
             </p>
           )}

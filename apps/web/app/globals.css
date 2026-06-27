@@ -4,6 +4,21 @@
 
 :root {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Room theme tokens — defaults match the original dark "Classic" look so
+     rt-* utilities are safe to use anywhere (e.g. the Create screen). */
+  --rt-bg: transparent;
+  --rt-surface: rgba(255, 255, 255, 0.05);
+  --rt-surface-2: rgba(255, 255, 255, 0.05);
+  --rt-border: rgba(255, 255, 255, 0.1);
+  --rt-text: #e2e8f0;
+  --rt-muted: #94a3b8;
+  --rt-soft: #64748b;
+  --rt-chip: rgba(255, 255, 255, 0.1);
+  --rt-accent: #7c5cff;
+  --rt-accent-soft: rgba(124, 92, 255, 0.15);
+  --rt-on-accent: #ffffff;
+  --rt-danger: #ef4444;
 }
 
 html,
@@ -40,4 +55,120 @@ body {
 }
 .transcript-scroll::-webkit-scrollbar-thumb {
   @apply bg-white/10 rounded-full;
+}
+
+/* ── Room theming ─────────────────────────────────────────────────────────
+   Semantic tokens consumed by the room view + its components. Defaults match
+   the original dark "Classic" look so components used elsewhere (e.g. the
+   IntensitySlider on the Create screen) are unaffected. The `.clubhouse`
+   class on the room shell swaps in the warm, light Clubhouse palette. */
+.room-shell.clubhouse {
+  --rt-bg: #f1ece0;
+  --rt-surface: #ffffff;
+  --rt-surface-2: #f7f3ea;
+  --rt-border: rgba(31, 28, 20, 0.08);
+  --rt-text: #1f1d18;
+  --rt-muted: #6f6b5f;
+  --rt-soft: #9a9488;
+  --rt-chip: rgba(31, 28, 20, 0.06);
+  --rt-accent: #1f7a46;
+  --rt-accent-soft: rgba(31, 122, 70, 0.12);
+  --rt-on-accent: #ffffff;
+  --rt-danger: #df7a5e;
+}
+
+.rt-bg {
+  background-color: var(--rt-bg);
+}
+.rt-text {
+  color: var(--rt-text);
+}
+.rt-muted {
+  color: var(--rt-muted);
+}
+.rt-soft {
+  color: var(--rt-soft);
+}
+.rt-divider {
+  border-color: var(--rt-border);
+}
+.rt-chip {
+  background-color: var(--rt-chip);
+}
+
+/* Card / panel surface */
+.rt-surface {
+  background-color: var(--rt-surface);
+  border: 1px solid var(--rt-border);
+}
+.room-shell:not(.clubhouse) .rt-surface {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.room-shell.clubhouse .rt-surface {
+  box-shadow:
+    0 1px 2px rgba(31, 28, 20, 0.04),
+    0 12px 30px rgba(31, 28, 20, 0.05);
+}
+
+/* Control bar */
+.rt-footer {
+  border-color: var(--rt-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.room-shell:not(.clubhouse) .rt-footer {
+  background-color: rgba(7, 7, 17, 0.6);
+}
+.room-shell.clubhouse .rt-footer {
+  background-color: rgba(241, 236, 224, 0.85);
+}
+
+/* Inputs / selects */
+.rt-field {
+  background-color: var(--rt-surface-2);
+  border-color: var(--rt-border);
+  color: var(--rt-text);
+}
+.rt-field:focus {
+  border-color: var(--rt-accent);
+}
+
+/* Subtle hover for neutral buttons */
+.rt-hover:hover {
+  background-color: var(--rt-chip);
+}
+
+/* Push-to-talk — keep the Classic gradient, swap to a solid accent in Clubhouse */
+.rt-ptt {
+  background: linear-gradient(to right, #9b85ff, #6a45f5);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(124, 92, 255, 0.3);
+}
+.room-shell.clubhouse .rt-ptt {
+  background: var(--rt-accent);
+  box-shadow: 0 10px 26px rgba(31, 122, 70, 0.28);
+}
+.rt-ptt-live {
+  background: #10b981 !important;
+  color: #fff;
+  box-shadow: 0 0 40px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* Danger pill (End session) */
+.rt-danger {
+  background-color: var(--rt-danger);
+  color: #fff;
+}
+
+/* Active-speaker name chip + user transcript bubble tint */
+.rt-accent-chip {
+  background-color: var(--rt-accent);
+  color: var(--rt-on-accent);
+}
+.rt-accent-soft-bg {
+  background-color: var(--rt-accent-soft);
+}
+.rt-accent-text {
+  color: var(--rt-accent);
 }

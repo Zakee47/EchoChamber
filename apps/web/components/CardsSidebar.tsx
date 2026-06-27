@@ -17,15 +17,15 @@ export function CardsSidebar({
 }) {
   return (
     <div className="flex h-full flex-col">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold rt-text">
         Insight cards
-        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-slate-400">
+        <span className="rounded-full rt-chip rt-muted px-2 py-0.5 text-xs">
           {cards.length}
         </span>
       </h3>
       <div className="transcript-scroll flex-1 space-y-3 overflow-y-auto pr-1">
         {cards.length === 0 && (
-          <p className="pt-6 text-center text-xs text-slate-500">
+          <p className="pt-6 text-center text-xs rt-soft">
             Frameworks, takeaways &amp; action items appear here as the panel debates.
           </p>
         )}
@@ -35,7 +35,7 @@ export function CardsSidebar({
           return (
             <div
               key={card.id}
-              className="animate-float-in rounded-xl border border-white/10 bg-white/5 p-3"
+              className="animate-float-in rounded-xl border rt-divider rt-chip p-3"
             >
               <div className="mb-1.5 flex items-center gap-2">
                 <span
@@ -48,8 +48,8 @@ export function CardsSidebar({
                   {m.label}
                 </span>
               </div>
-              <p className="text-sm leading-snug text-slate-200">{card.text}</p>
-              <p className="mt-1.5 text-[11px] text-slate-500">— {name}</p>
+              <p className="text-sm leading-snug rt-text">{card.text}</p>
+              <p className="mt-1.5 text-[11px] rt-soft">— {name}</p>
             </div>
           );
         })}

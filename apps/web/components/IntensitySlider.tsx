@@ -22,7 +22,7 @@ export function IntensitySlider({
   return (
     <div className="w-full">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-300">Debate intensity</span>
+        <span className="text-sm font-medium rt-muted">Debate intensity</span>
         <span className="text-sm font-semibold" style={{ color: COLORS[value] }}>
           {cfg.label}
         </span>
@@ -34,17 +34,15 @@ export function IntensitySlider({
             type="button"
             onClick={() => onChange(lvl)}
             className={`flex-1 rounded-xl border px-3 py-2 text-sm font-medium transition ${
-              value === lvl
-                ? "border-transparent text-white"
-                : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
+              value === lvl ? "" : "rt-divider rt-muted rt-hover"
             }`}
-            style={value === lvl ? { background: `${COLORS[lvl]}22`, borderColor: COLORS[lvl] } : {}}
+            style={value === lvl ? { background: `${COLORS[lvl]}22`, borderColor: COLORS[lvl], color: COLORS[lvl] } : {}}
           >
             {INTENSITY[lvl].label}
           </button>
         ))}
       </div>
-      {!compact && <p className="mt-2 text-xs leading-relaxed text-slate-500">{cfg.directive}</p>}
+      {!compact && <p className="mt-2 text-xs leading-relaxed rt-soft">{cfg.directive}</p>}
     </div>
   );
 }
