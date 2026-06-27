@@ -59,7 +59,7 @@ export const mockDeepWikiProvider: DeepWikiProvider = {
       title: `Indexed via DeepWiki`,
       tier: 3,
       avatar: { color: "#64748B", initials: initials(name) },
-      voiceProfile: { voiceId: "slng_default" },
+      voiceProfile: { voiceId: `slng_${id}` },
       expertiseTags: [],
       naturalTensions: [],
       systemPrompt: `You are ${name}. (DeepWiki-generated persona — mock.)`,

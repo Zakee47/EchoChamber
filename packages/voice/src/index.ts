@@ -20,6 +20,7 @@ export interface VoiceConfig {
   geminiApiKey?: string;
   slngApiKey?: string;
   slngBaseUrl?: string;
+  slngModel?: string;
   mode?: "real" | "mock";
 }
 
@@ -73,7 +74,7 @@ export function createSTTAdapter(cfg: VoiceConfig): STTAdapter {
 
 export function createTTSAdapter(cfg: VoiceConfig): TTSAdapter {
   if (cfg.mode === "mock" || !cfg.slngApiKey) return mockTTS;
-  return createSlngTTS(cfg.slngApiKey, cfg.slngBaseUrl);
+  return createSlngTTS(cfg.slngApiKey, cfg.slngBaseUrl, cfg.slngModel);
 }
 
 function hash(s: string): number {
