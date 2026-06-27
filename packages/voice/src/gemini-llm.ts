@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { LLMAdapter, LLMGenerateParams } from "@echochamber/shared";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 const DEFAULT_MAX_TOKENS = 120;
 const DEFAULT_TEMPERATURE = 0.9;
 

@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { STTAdapter } from "@echochamber/shared";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 
 export function createGeminiSTT(apiKey: string): STTAdapter {
   const client = new GoogleGenAI({ apiKey });
