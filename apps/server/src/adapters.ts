@@ -21,6 +21,7 @@ export function buildAdapterBundle(mode: AdapterMode): AdapterBundle {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   const slngApiKey = process.env.SLNG_API_KEY;
   const slngBaseUrl = process.env.SLNG_BASE_URL;
+  const slngModel = process.env.SLNG_MODEL;
   const superlinkedApiKey = process.env.SUPERLINKED_API_KEY;
   const superlinkedBaseUrl = process.env.SUPERLINKED_BASE_URL;
   const tavilyApiKey = process.env.TAVILY_API_KEY;
@@ -28,7 +29,7 @@ export function buildAdapterBundle(mode: AdapterMode): AdapterBundle {
   return {
     llm: createLLMAdapter({ geminiApiKey, mode }),
     stt: createSTTAdapter({ geminiApiKey, mode }),
-    tts: createTTSAdapter({ slngApiKey, slngBaseUrl, mode }),
+    tts: createTTSAdapter({ slngApiKey, slngBaseUrl, slngModel, mode }),
     grounding: createGroundingProvider({
       superlinkedApiKey,
       superlinkedBaseUrl,

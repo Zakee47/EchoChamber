@@ -206,12 +206,46 @@ const CATEGORY_TONE: Record<ExpertCategory, string> = {
   founder: "visionary",
 };
 
+// Explicit, gender-appropriate Aura 2 voices for the Tier-1 demo experts so the
+// flagship panel sounds distinct. Everyone else is assigned deterministically
+// from the pool below.
+const TIER1_VOICES: Record<string, string> = {
+  "elena-verna": "aura-2-asteria-en",
+  "keith-rabois": "aura-2-orion-en",
+  "paul-graham": "aura-2-arcas-en",
+  "ryo-lu": "aura-2-apollo-en",
+  "eric-ries": "aura-2-zeus-en",
+  "boris-cherny": "aura-2-atlas-en",
+};
+
+// Verified-working Aura 2 English voices (SLNG-hosted Deepgram).
+const VOICE_POOL = [
+  "aura-2-draco-en",
+  "aura-2-orpheus-en",
+  "aura-2-jupiter-en",
+  "aura-2-mars-en",
+  "aura-2-pluto-en",
+  "aura-2-saturn-en",
+  "aura-2-hyperion-en",
+  "aura-2-thalia-en",
+  "aura-2-luna-en",
+  "aura-2-athena-en",
+  "aura-2-hera-en",
+  "aura-2-andromeda-en",
+  "aura-2-aurora-en",
+  "aura-2-iris-en",
+  "aura-2-cordelia-en",
+  "aura-2-callista-en",
+];
+
 function synthVoiceProfile(id: string, category: ExpertCategory): VoiceProfile {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h << 5) - h + id.charCodeAt(i);
   const pitch = Math.round(((Math.abs(h) % 100) / 100 - 0.5) * 10) / 10; // -0.5..0.4
   const pace = Math.round((0.92 + ((Math.abs(h >> 3) % 24) / 100)) * 100) / 100; // ~0.92..1.15
-  return { voiceId: `slng_${id}`, pitch, pace, tone: CATEGORY_TONE[category] };
+  const voiceId =
+    TIER1_VOICES[id] ?? VOICE_POOL[Math.abs(h) % VOICE_POOL.length]!;
+  return { voiceId, pitch, pace, tone: CATEGORY_TONE[category] };
 }
 
 // ── Public loader ────────────────────────────────────────────────────────────
