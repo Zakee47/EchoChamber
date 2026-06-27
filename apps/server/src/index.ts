@@ -1,104 +1,111 @@
-// EchoChamber orchestrator server — STARTER STUB.
+// EchoChamber orchestrator server.
 //
-// This compiles and runs in mock mode: serves the roster and accepts WS
-// connections per room. The orchestrator child (apps/server) replaces the
-// turn-taking placeholder with the real engine described in BUILD.md / PRD §6.
+// REST API + WebSocket turn engine for the AI Expert Roundtable. Holds all
+// state in memory (rooms, sessions, persona catalog). Depends only on the
+// @echochamber/shared interfaces and the package factories — no vendor SDKs.
+//
+// See apps/server/BUILD.md and docs/EXPERT_ROUNDTABLE_TECHNICAL_PRD.md §6, §11.
 
-import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { createServer } from "node:http";
+import type { Socket } from "node:net";
 import express from "express";
 import cors from "cors";
 import { WebSocketServer, type WebSocket } from "ws";
 import dotenv from "dotenv";
-import {
-  API_ROUTES,
-  type ClientMessage,
-  type ServerMessage,
-  type ExpertCategory,
-  type GroundingTier,
-  type RosterEntry,
+import type {
+  ClientMessage,
+  DeepWikiProgress,
+  ServerMessage,
 } from "@echochamber/shared";
-import { createLLMAdapter, createSTTAdapter, createTTSAdapter } from "@echochamber/voice";
-import { createGroundingProvider } from "@echochamber/grounding";
-import { createDeepWikiProvider } from "@echochamber/deepwiki";
-
-dotenv.config({ path: resolve(process.cwd(), "../../.env") });
-
-const MODE = (process.env.ECHO_ADAPTER_MODE === "real" ? "real" : "mock") as "real" | "mock";
-
-const adapters = {
-  llm: createLLMAdapter({ geminiApiKey: process.env.GEMINI_API_KEY, mode: MODE }),
-  stt: createSTTAdapter({ geminiApiKey: process.env.GEMINI_API_KEY, mode: MODE }),
-  tts: createTTSAdapter({ slngApiKey: process.env.SLNG_API_KEY, mode: MODE }),
-  grounding: createGroundingProvider({ superlinkedApiKey: process.env.SUPERLINKED_API_KEY, mode: MODE }),
-  deepwiki: createDeepWikiProvider({ tavilyApiKey: process.env.TAVILY_API_KEY, mode: MODE }),
-};
+import { buildAdapterBundle, resolveMode } from "./adapters.js";
+import { loadPersonaCatalog } from "./personas.js";
+import { RoomStore } from "./store.js";
+import { SessionManager } from "./sessions.js";
+import { buildRestRouter } from "./rest.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const rosterPath = resolve(__dirname, "../../../data/personas/roster.json");
+dotenv.config({ path: resolve(__dirname, "../../../.env") });
 
-interface RosterFile {
-  experts: Array<{
-    id: string;
-    name: string;
-    category: ExpertCategory;
-    title: string;
-    tier: GroundingTier;
-    avatar: { color: string; initials: string; image?: string };
-    expertiseTags: string[];
-  }>;
-}
+const MODE = resolveMode();
+const adapters = buildAdapterBundle(MODE);
+const catalog = loadPersonaCatalog();
+const store = new RoomStore();
+const sessions = new SessionManager(store, catalog, adapters);
 
-function loadRoster(): RosterEntry[] {
-  const raw = JSON.parse(readFileSync(rosterPath, "utf8")) as RosterFile;
-  return raw.experts;
+// Every connected socket, used to fan out DeepWiki progress events (which are
+// not scoped to a single room).
+const allSockets = new Set<WebSocket>();
+function broadcastDeepWiki(progress: DeepWikiProgress): void {
+  const msg: ServerMessage = { type: "deepwiki_progress", progress };
+  const data = JSON.stringify(msg);
+  for (const ws of allSockets) {
+    if (ws.readyState === ws.OPEN) ws.send(data);
+  }
 }
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
-app.get("/health", (_req, res) => res.json({ ok: true, mode: MODE }));
+app.get("/health", (_req, res) =>
+  res.json({ ok: true, mode: MODE, experts: catalog.list().length }),
+);
 
-app.get(API_ROUTES.experts, (_req, res) => {
-  res.json({ experts: loadRoster() });
-});
-
-// TODO(child:server): implement suggest-panel, rooms CRUD, deepwiki index.
+app.use(
+  buildRestRouter({ catalog, store, llm: adapters.llm, deepwiki: adapters.deepwiki, broadcastDeepWiki }),
+);
 
 const server = createServer(app);
-const wss = new WebSocketServer({ server, path: "/ws" });
 
-wss.on("connection", (ws: WebSocket) => {
-  const send = (m: ServerMessage) => ws.send(JSON.stringify(m));
-  ws.on("message", async (data) => {
-    let msg: ClientMessage;
-    try {
-      msg = JSON.parse(data.toString()) as ClientMessage;
-    } catch {
-      send({ type: "error", message: "invalid json" });
+// Manual upgrade routing so we can support both room sockets
+// (/ws/rooms/:roomId) and a lobby socket (/ws) for DeepWiki progress.
+const wss = new WebSocketServer({ noServer: true });
+const ROOM_WS = /^\/ws\/rooms\/([^/?]+)/;
+
+server.on("upgrade", (req, socket, head) => {
+  const url = req.url ?? "";
+  const path = url.split("?")[0] ?? "";
+  const roomMatch = ROOM_WS.exec(path);
+  const isLobby = path === "/ws" || path === "/ws/lobby";
+
+  if (!roomMatch && !isLobby) {
+    socket.destroy();
+    return;
+  }
+
+  wss.handleUpgrade(req, socket as Socket, head, (ws) => {
+    allSockets.add(ws);
+    ws.on("close", () => allSockets.delete(ws));
+
+    if (!roomMatch) return; // lobby socket: DeepWiki progress only
+
+    const roomId = decodeURIComponent(roomMatch[1]!);
+    const session = sessions.ensure(roomId);
+    if (!session) {
+      ws.send(JSON.stringify({ type: "error", message: `room ${roomId} not found`, fatal: true } satisfies ServerMessage));
+      ws.close();
       return;
     }
-    // Placeholder echo so the frontend can integrate against a live socket.
-    if (msg.type === "user_utterance") {
-      const text = msg.text ?? (await adapters.stt.transcribe(new Uint8Array(), "audio/wav"));
-      const reply = await adapters.llm.generate({
-        systemPrompt: "You are a helpful startup advisor.",
-        userPrompt: text,
-      });
-      send({ type: "speaker_state", agentId: "elena-verna", state: "speaking" });
-      send({
-        type: "transcript",
-        entry: { id: `t_${Date.now()}`, speaker: "elena-verna", text: reply, ts: Date.now() },
-      });
-      send({ type: "speaker_state", agentId: "elena-verna", state: "done" });
-    }
+    session.attach(ws);
+
+    ws.on("message", (data) => {
+      let msg: ClientMessage;
+      try {
+        msg = JSON.parse(data.toString()) as ClientMessage;
+      } catch {
+        ws.send(JSON.stringify({ type: "error", message: "invalid json" } satisfies ServerMessage));
+        return;
+      }
+      void session.handle(ws, msg);
+    });
   });
 });
 
 const PORT = Number(process.env.PORT ?? 8787);
 server.listen(PORT, () => {
-  console.log(`[echochamber] orchestrator (${MODE} mode) on :${PORT}`);
+  console.log(
+    `[echochamber] orchestrator (${MODE} mode) on :${PORT} — ${catalog.list().length} experts loaded`,
+  );
 });
