@@ -69,6 +69,7 @@ class MockRoomConnection implements RoomConnection {
   private turn = 0;
   private intensity: DebateIntensity;
   private lastSpeaker: string | null = null;
+  private entrySpeaker = new Map<string, string>();
   private closed = false;
 
   constructor(
@@ -109,9 +110,14 @@ class MockRoomConnection implements RoomConnection {
   }
 
   /** Stream one agent's response: thinking → streamed transcript → audio → done. */
-  private speak(agentId: string, refersTo: string | undefined, startDelay: number): number {
+  private speak(
+    agentId: string,
+    refersTo: string | undefined,
+    startDelay: number,
+  ): { entryId: string; doneAt: number } {
     const entryId = `t_${Date.now()}_${Math.floor(Math.random() * 1e4)}`;
-    const refName = refersTo ? this.name(this.lastSpeaker ?? "") : undefined;
+    this.entrySpeaker.set(entryId, agentId);
+    const refName = refersTo ? this.name(this.entrySpeaker.get(refersTo) ?? "") : undefined;
     const text = this.lineFor(agentId, refName);
     const words = text.split(" ");
 
@@ -154,7 +160,7 @@ class MockRoomConnection implements RoomConnection {
     const doneAt = streamStart + speakMs + 200;
     this.later(() => this.emit({ type: "speaker_state", agentId, state: "done" }), doneAt);
     this.lastSpeaker = agentId;
-    return doneAt;
+    return { entryId, doneAt };
   }
 
   private maybeCard(agentId: string, delay: number) {
@@ -195,7 +201,8 @@ class MockRoomConnection implements RoomConnection {
     const lead = forced ?? this.pick(this.lastSpeaker);
     speakers.push(lead);
 
-    let cursor = this.speak(lead, undefined, 200);
+    const leadTurn = this.speak(lead, undefined, 200);
+    let cursor = leadTurn.doneAt;
     this.maybeCard(lead, cursor + 100);
 
     // Reactor based on debate intensity.
@@ -203,7 +210,7 @@ class MockRoomConnection implements RoomConnection {
       const reactor = this.pick(lead, speakers);
       if (reactor) {
         speakers.push(reactor);
-        cursor = this.speak(reactor, lead, cursor + 400);
+        cursor = this.speak(reactor, leadTurn.entryId, cursor + 400).doneAt;
         this.maybeCard(reactor, cursor + 100);
       }
     }
