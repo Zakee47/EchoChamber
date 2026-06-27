@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import type { DebateIntensity, RosterEntry } from "@echochamber/shared";
 import { getExperts } from "@/lib/api";
@@ -70,8 +70,23 @@ function RoomInner({
   const [interim, setInterim] = useState("");
   const [draft, setDraft] = useState("");
   const [mentionId, setMentionId] = useState<string>("");
+  const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const pttRef = useRef<PushToTalk | null>(null);
   const supported = useMemo(() => speechSupported(), []);
+
+  const toggleBookmark = useCallback((id: string) => {
+    setBookmarks((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const bookmarkedEntries = useMemo(
+    () => room.transcript.filter((t) => bookmarks.has(t.id)),
+    [room.transcript, bookmarks],
+  );
 
   function startTalking() {
     setUserSpeaking(true);
@@ -170,7 +185,12 @@ function RoomInner({
                 </span>
               )}
             </div>
-            <TranscriptPanel transcript={room.transcript} rosterMap={rosterMap} />
+            <TranscriptPanel
+              transcript={room.transcript}
+              rosterMap={rosterMap}
+              bookmarks={bookmarks}
+              onToggleBookmark={toggleBookmark}
+            />
           </div>
         </div>
 
@@ -255,6 +275,7 @@ function RoomInner({
           topic={config.topic}
           transcript={room.transcript}
           cards={room.cards}
+          bookmarks={bookmarkedEntries}
           rosterMap={rosterMap}
         />
       )}

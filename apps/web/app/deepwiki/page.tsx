@@ -7,6 +7,7 @@ import { getExperts } from "@/lib/api";
 import { runDeepWiki } from "@/lib/deepwiki";
 import { addDeepWikiExpert, loadDeepWikiExperts } from "@/lib/clientStore";
 import { TopBar } from "@/components/TopBar";
+import { ThemeShell } from "@/components/ThemeShell";
 import { Avatar } from "@/components/Avatar";
 
 const STAGES: { id: DeepWikiStage; label: string }[] = [
@@ -53,12 +54,12 @@ export default function DeepWikiPage() {
   }
 
   return (
-    <main className="min-h-screen">
+    <ThemeShell>
       <TopBar active="deepwiki" />
       <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="max-w-2xl">
           <h1 className="text-3xl font-bold tracking-tight">Index any expert with DeepWiki</h1>
-          <p className="mt-2 text-slate-400">
+          <p className="mt-2 rt-muted">
             Type a name. DeepWiki searches their real published content, builds a grounded persona,
             and drops a new avatar into your picker — usually in under a minute.
           </p>
@@ -70,19 +71,19 @@ export default function DeepWikiPage() {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && build()}
             placeholder="e.g. Jason Fried, Naval Ravikant, Marc Andreessen…"
-            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 text-lg outline-none transition placeholder:text-slate-600 focus:border-brand-400 focus:bg-white/10"
+            className="rt-field flex-1 rounded-xl border px-5 py-3.5 text-lg outline-none transition placeholder:opacity-50"
           />
           <button
             onClick={build}
             disabled={!name.trim() || running}
-            className="rounded-xl bg-gradient-to-r from-brand-400 to-brand-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:brightness-110 disabled:opacity-40"
+            className="rt-primary rounded-xl px-7 py-3.5 text-sm font-semibold transition hover:brightness-110 disabled:opacity-40"
           >
             {running ? "Indexing…" : "Build persona"}
           </button>
         </div>
 
         {progress && (
-          <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div className="mt-8 rounded-2xl border rt-divider rt-chip p-6">
             <div className="space-y-3">
               {STAGES.map((s, i) => {
                 const reached = currentIdx >= i;
@@ -98,12 +99,12 @@ export default function DeepWikiPage() {
                             ? "bg-brand text-white"
                             : reached
                               ? "bg-brand/40 text-white"
-                              : "bg-white/10 text-slate-500"
+                              : "rt-chip rt-soft"
                       }`}
                     >
                       {done ? "✓" : active ? <Spinner /> : i + 1}
                     </span>
-                    <span className={reached ? "text-slate-100" : "text-slate-500"}>
+                    <span className={reached ? "rt-text" : "rt-soft"}>
                       {s.label}
                       {s.id === "found_sources" && progress.found ? ` — ${progress.found}` : ""}
                     </span>
@@ -112,7 +113,7 @@ export default function DeepWikiPage() {
               })}
             </div>
             {progress.message && (
-              <p className="mt-4 text-sm text-slate-400">{progress.message}</p>
+              <p className="mt-4 text-sm rt-muted">{progress.message}</p>
             )}
           </div>
         )}
@@ -123,11 +124,11 @@ export default function DeepWikiPage() {
             <div className="flex-1">
               <div className="text-sm font-semibold text-emerald-300">Added to your picker</div>
               <div className="text-lg font-bold">{justAdded.name}</div>
-              <div className="text-xs text-slate-400">Tier 3 · DeepWiki-generated</div>
+              <div className="text-xs rt-muted">Tier 3 · DeepWiki-generated</div>
             </div>
             <Link
               href="/create"
-              className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-ink-950"
+              className="rt-solid rounded-full px-5 py-2 text-sm font-semibold"
             >
               Use in a room →
             </Link>
@@ -137,20 +138,20 @@ export default function DeepWikiPage() {
         <section className="mt-12">
           <h2 className="mb-4 text-lg font-semibold">
             Expert picker{" "}
-            <span className="text-sm font-normal text-slate-500">({picker.length} available)</span>
+            <span className="text-sm font-normal rt-soft">({picker.length} available)</span>
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {picker.map((e) => (
               <div
                 key={e.id}
                 className={`flex items-center gap-3 rounded-xl border p-3 ${
-                  e.tier === 3 ? "border-emerald-500/30 bg-emerald-500/5" : "border-white/10 bg-white/5"
+                  e.tier === 3 ? "border-emerald-500/30 bg-emerald-500/5" : "rt-divider rt-chip"
                 }`}
               >
                 <Avatar expert={e} size="md" />
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">{e.name}</div>
-                  <div className="truncate text-xs text-slate-400">
+                  <div className="truncate text-sm font-semibold rt-text">{e.name}</div>
+                  <div className="truncate text-xs rt-muted">
                     {e.tier === 3 ? "DeepWiki" : e.title}
                   </div>
                 </div>
@@ -159,7 +160,7 @@ export default function DeepWikiPage() {
           </div>
         </section>
       </div>
-    </main>
+    </ThemeShell>
   );
 }
 

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRoomTheme } from "@/lib/roomTheme";
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
@@ -18,7 +21,7 @@ export function Logo({ className = "" }: { className?: string }) {
 
 export function TopBar({ active }: { active?: "explore" | "deepwiki" }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/5 bg-ink-950/70 backdrop-blur-xl">
+    <header className="rt-footer sticky top-0 z-30 border-b">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
         <div className="flex items-center gap-8">
           <Logo />
@@ -28,15 +31,16 @@ export function TopBar({ active }: { active?: "explore" | "deepwiki" }) {
           </nav>
         </div>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link
             href="/deepwiki"
-            className="hidden rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 sm:inline-block"
+            className="hidden rounded-full border rt-divider rt-muted rt-hover px-4 py-2 text-sm font-medium transition sm:inline-block"
           >
             + Index an expert
           </Link>
           <Link
             href="/create"
-            className="rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:brightness-110"
+            className="rt-primary rounded-full px-5 py-2 text-sm font-semibold transition hover:brightness-110"
           >
             Create Room
           </Link>
@@ -46,12 +50,29 @@ export function TopBar({ active }: { active?: "explore" | "deepwiki" }) {
   );
 }
 
+export function ThemeToggle({ className = "" }: { className?: string }) {
+  const { theme, toggle } = useRoomTheme();
+  return (
+    <button
+      onClick={toggle}
+      className={`rounded-full border rt-divider rt-muted rt-hover px-3 py-2 text-xs font-medium transition ${className}`}
+      title={
+        theme === "clubhouse"
+          ? "Switch to Classic (dark) theme"
+          : "Switch to Clubhouse (light) theme"
+      }
+    >
+      {theme === "clubhouse" ? "◑ Classic" : "◐ Clubhouse"}
+    </button>
+  );
+}
+
 function NavLink({ href, label, current }: { href: string; label: string; current?: boolean }) {
   return (
     <Link
       href={href}
       className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-        current ? "bg-white/10 text-white" : "text-slate-400 hover:text-white"
+        current ? "rt-chip rt-text" : "rt-muted hover:opacity-80"
       }`}
     >
       {label}

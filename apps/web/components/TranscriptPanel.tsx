@@ -6,9 +6,13 @@ import type { RosterEntry, TranscriptEntry } from "@echochamber/shared";
 export function TranscriptPanel({
   transcript,
   rosterMap,
+  bookmarks,
+  onToggleBookmark,
 }: {
   transcript: TranscriptEntry[];
   rosterMap: Map<string, RosterEntry>;
+  bookmarks?: Set<string>;
+  onToggleBookmark?: (id: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -30,8 +34,9 @@ export function TranscriptPanel({
           ? transcript.find((t) => t.id === entry.refersTo)
           : undefined;
         const refName = refersTo ? rosterMap.get(refersTo.speaker)?.name ?? "" : "";
+        const bookmarked = bookmarks?.has(entry.id) ?? false;
         return (
-          <div key={entry.id} className="animate-fade-up">
+          <div key={entry.id} className="group animate-fade-up">
             <div className="mb-1 flex items-center gap-2">
               <span
                 className={`text-sm font-semibold ${isUser ? "rt-text" : ""}`}
@@ -43,6 +48,19 @@ export function TranscriptPanel({
                 <span className="rounded-full rt-chip rt-muted px-2 py-0.5 text-[10px]">
                   ↳ replying to {refName.split(" ")[0]}
                 </span>
+              )}
+              {onToggleBookmark && !entry.partial && (
+                <button
+                  onClick={() => onToggleBookmark(entry.id)}
+                  aria-label={bookmarked ? "Remove bookmark" : "Bookmark this quote"}
+                  aria-pressed={bookmarked}
+                  title={bookmarked ? "Bookmarked — shows in summary" : "Bookmark this quote"}
+                  className={`ml-auto rounded-full px-1.5 py-0.5 text-xs leading-none transition hover:opacity-100 ${
+                    bookmarked ? "rt-accent-text opacity-100" : "rt-soft opacity-50"
+                  }`}
+                >
+                  {bookmarked ? "★" : "☆"}
+                </button>
               )}
             </div>
             <p

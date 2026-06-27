@@ -7,6 +7,7 @@ import { getExperts, getRooms } from "@/lib/api";
 import type { LobbyRoom } from "@/lib/mockData";
 import { CATEGORIES } from "@/lib/config";
 import { TopBar } from "@/components/TopBar";
+import { ThemeShell } from "@/components/ThemeShell";
 import { RoomCard } from "@/components/RoomCard";
 
 export default function LobbyPage() {
@@ -37,13 +38,13 @@ export default function LobbyPage() {
   const upcoming = filtered.filter((r) => !r.live);
 
   return (
-    <main className="min-h-screen">
+    <ThemeShell>
       <TopBar active="explore" />
       <div className="mx-auto max-w-7xl px-6 pb-24">
         {/* Hero */}
         <section className="py-12">
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
+            <span className="inline-flex items-center gap-2 rounded-full border rt-divider rt-chip rt-muted px-3 py-1 text-xs font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Grounded AI avatars of real experts
             </span>
             <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -53,20 +54,20 @@ export default function LobbyPage() {
                 experts debate your problem.
               </span>
             </h1>
-            <p className="mt-4 max-w-2xl text-lg text-slate-400">
+            <p className="mt-4 max-w-2xl text-lg rt-muted">
               Open a voice roundtable with grounded AI avatars of Paul Graham, Elena Verna, Keith
               Rabois and more. You set the panel, the debate intensity, and jump in any time.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/create"
-                className="rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:brightness-110"
+                className="rt-primary rounded-full px-6 py-3 text-sm font-semibold transition hover:brightness-110"
               >
                 Create a room
               </Link>
               <Link
                 href="/deepwiki"
-                className="rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
+                className="rounded-full border rt-divider rt-text rt-hover px-6 py-3 text-sm font-semibold transition"
               >
                 Index a new expert
               </Link>
@@ -106,12 +107,12 @@ export default function LobbyPage() {
               </Section>
             )}
             {filtered.length === 0 && (
-              <p className="py-16 text-center text-slate-500">No rooms in this category yet.</p>
+              <p className="py-16 text-center rt-soft">No rooms in this category yet.</p>
             )}
           </>
         )}
       </div>
-    </main>
+    </ThemeShell>
   );
 }
 
@@ -128,7 +129,7 @@ function Section({
     <section className="mt-10">
       <div className="mb-4 flex items-baseline justify-between">
         <h2 className="text-xl font-semibold">{title}</h2>
-        {subtitle && <span className="text-sm text-slate-500">{subtitle}</span>}
+        {subtitle && <span className="text-sm rt-soft">{subtitle}</span>}
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </section>
@@ -141,8 +142,8 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
       onClick={onClick}
       className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
         active
-          ? "bg-white text-ink-950"
-          : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+          ? "rt-solid"
+          : "border rt-divider rt-chip rt-muted rt-hover"
       }`}
     >
       {label}
@@ -154,7 +155,7 @@ function SkeletonGrid() {
   return (
     <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="h-44 animate-pulse rounded-2xl bg-white/5" />
+        <div key={i} className="h-44 animate-pulse rounded-2xl rt-chip" />
       ))}
     </div>
   );

@@ -14,12 +14,14 @@ export function SummaryModal({
   topic,
   transcript,
   cards,
+  bookmarks = [],
   rosterMap,
 }: {
   summary: SessionSummary;
   topic: string;
   transcript: TranscriptEntry[];
   cards: VisualCard[];
+  bookmarks?: TranscriptEntry[];
   rosterMap: Map<string, RosterEntry>;
 }) {
   const [copied, setCopied] = useState(false);
@@ -37,6 +39,10 @@ export function SummaryModal({
     summary.disagreements.forEach((d) => lines.push(`  • ${d}`));
     lines.push("", "Next steps:");
     summary.nextSteps.forEach((s) => lines.push(`  • ${s}`));
+    if (bookmarks.length > 0) {
+      lines.push("", "Bookmarked quotes:");
+      bookmarks.forEach((b) => lines.push(`  • “${b.text}” — ${name(b.speaker)}`));
+    }
     lines.push("", "Transcript:");
     transcript.forEach((t) => lines.push(`  ${name(t.speaker)}: ${t.text}`));
     return lines.join("\n");
@@ -87,6 +93,23 @@ export function SummaryModal({
               ))}
             </ul>
           </Block>
+
+          {bookmarks.length > 0 && (
+            <Block title={`Bookmarked quotes (${bookmarks.length})`}>
+              <ul className="space-y-2">
+                {bookmarks.map((b) => (
+                  <li
+                    key={b.id}
+                    className="rounded-xl rt-chip px-3.5 py-2.5 text-sm"
+                    style={{ borderLeft: `3px solid ${rosterMap.get(b.speaker)?.avatar.color ?? "var(--rt-accent)"}` }}
+                  >
+                    <span className="rt-text">“{b.text}”</span>
+                    <span className="mt-1 block text-xs rt-soft">— {name(b.speaker)}</span>
+                  </li>
+                ))}
+              </ul>
+            </Block>
+          )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Block title="Points of agreement">

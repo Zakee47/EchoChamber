@@ -139,6 +139,14 @@ body {
   background-color: var(--rt-chip);
 }
 
+/* Ring used to separate overlapping avatars from the card behind them */
+.rt-ring {
+  --tw-ring-color: #0f1020;
+}
+.room-shell.clubhouse .rt-ring {
+  --tw-ring-color: #ffffff;
+}
+
 /* Push-to-talk — keep the Classic gradient, swap to a solid accent in Clubhouse */
 .rt-ptt {
   background: linear-gradient(to right, #9b85ff, #6a45f5);
@@ -171,4 +179,26 @@ body {
 }
 .rt-accent-text {
   color: var(--rt-accent);
+}
+
+/* Primary CTA — Classic keeps the brand gradient, Clubhouse uses the green accent */
+.rt-primary {
+  background: linear-gradient(to right, #9b85ff, #6a45f5);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(124, 92, 255, 0.3);
+}
+.room-shell.clubhouse .rt-primary {
+  background: var(--rt-accent);
+  box-shadow: 0 10px 26px rgba(31, 122, 70, 0.28);
+}
+
+/* Selected/solid neutral chip (e.g. active category) — Classic: white pill;
+   Clubhouse: green accent pill */
+.rt-solid {
+  background-color: #ffffff;
+  color: #0b0b1a;
+}
+.room-shell.clubhouse .rt-solid {
+  background-color: var(--rt-accent);
+  color: var(--rt-on-accent);
 }
