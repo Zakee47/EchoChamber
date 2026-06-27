@@ -1,0 +1,9 @@
+{
+  "name": "@echochamber/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Placeholder. The web child scaffolds Next.js (App Router, TS, Tailwind) here. See BUILD.md.",
+  "scripts": {
+    "dev": "echo 'Scaffold Next.js in apps/web first (see BUILD.md)' && exit 1"
+  }
+}

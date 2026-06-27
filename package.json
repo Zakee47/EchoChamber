@@ -1,0 +1,20 @@
+{
+  "name": "echochamber",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Expert Roundtable — live voice rooms with grounded AI avatars of real startup experts",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "tsc -b packages/shared packages/voice packages/grounding packages/deepwiki",
+    "dev:server": "npm run dev --workspace apps/server",
+    "dev:web": "npm run dev --workspace apps/web",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
