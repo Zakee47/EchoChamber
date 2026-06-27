@@ -127,11 +127,9 @@ function buildTensions(
 }
 
 /** Default voice profile for runtime-generated personas. */
-const DEFAULT_VOICE: VoiceProfile = {
-  voiceId: "slng_default",
-  pitch: 0,
-  pace: 1.0,
-};
+function defaultVoice(): VoiceProfile {
+  return { voiceId: "slng_default", pitch: 0, pace: 1.0 };
+}
 
 /** Assemble the final PersonaRecord from all extracted + computed data. */
 export function assemblePersonaRecord(
@@ -153,7 +151,7 @@ export function assemblePersonaRecord(
       color: CATEGORY_COLORS[category],
       initials: initials(name),
     },
-    voiceProfile: DEFAULT_VOICE,
+    voiceProfile: defaultVoice(),
     expertiseTags: extracted.expertiseTags.slice(0, 8),
     naturalTensions: buildTensions(extracted),
     systemPrompt,

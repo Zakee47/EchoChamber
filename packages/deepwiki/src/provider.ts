@@ -28,8 +28,10 @@ import {
 function mergeContent(docs: string[], maxChars = 40_000): string {
   let merged = "";
   for (const doc of docs) {
-    if (merged.length + doc.length > maxChars) {
-      merged += doc.slice(0, maxChars - merged.length);
+    const remaining = maxChars - merged.length;
+    if (remaining <= 0) break;
+    if (doc.length > remaining) {
+      merged += doc.slice(0, remaining);
       break;
     }
     merged += doc + "\n\n---\n\n";

@@ -27,44 +27,56 @@ export function basicCleanup(text: string): string {
 
 // ── Document-to-markdown ────────────────────────────────────────────────────
 
-/** Clean raw page text to structured markdown via SIE chat/completions. */
+/** Clean a single raw document via SIE, falling back to basic cleanup. */
+async function sieCleanOne(cfg: SieConfig, raw: string): Promise<string> {
+  const truncated = raw.slice(0, 12_000);
+  try {
+    const res = await fetch(`${cfg.baseUrl}/v1/chat/completions`, {
+      method: "POST",
+      headers: sieHeaders(cfg.apiKey),
+      body: JSON.stringify({
+        model: "default",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Convert the following raw web page text to clean, well-structured markdown. " +
+              "Remove navigation, ads, cookie banners, headers, footers, and irrelevant boilerplate. " +
+              "Keep only the substantive article, essay, or interview content. Output clean markdown only.",
+          },
+          { role: "user", content: truncated },
+        ],
+        max_tokens: 6000,
+        temperature: 0,
+      }),
+    });
+
+    if (!res.ok) throw new Error(`SIE doc-to-md ${res.status}`);
+
+    const data = (await res.json()) as {
+      choices: { message: { content: string } }[];
+    };
+    return data.choices[0]?.message?.content ?? basicCleanup(truncated);
+  } catch {
+    return basicCleanup(truncated);
+  }
+}
+
+/** Clean raw page texts to markdown via SIE (parallelized, capped concurrency). */
 export async function sieDocToMarkdown(
   cfg: SieConfig,
   rawTexts: string[],
 ): Promise<string[]> {
-  const results: string[] = [];
+  const CONCURRENCY = 5;
+  const results: string[] = new Array(rawTexts.length);
 
-  for (const raw of rawTexts) {
-    const truncated = raw.slice(0, 12_000);
-    try {
-      const res = await fetch(`${cfg.baseUrl}/v1/chat/completions`, {
-        method: "POST",
-        headers: sieHeaders(cfg.apiKey),
-        body: JSON.stringify({
-          model: "default",
-          messages: [
-            {
-              role: "system",
-              content:
-                "Convert the following raw web page text to clean, well-structured markdown. " +
-                "Remove navigation, ads, cookie banners, headers, footers, and irrelevant boilerplate. " +
-                "Keep only the substantive article, essay, or interview content. Output clean markdown only.",
-            },
-            { role: "user", content: truncated },
-          ],
-          max_tokens: 6000,
-          temperature: 0,
-        }),
-      });
-
-      if (!res.ok) throw new Error(`SIE doc-to-md ${res.status}`);
-
-      const data = (await res.json()) as {
-        choices: { message: { content: string } }[];
-      };
-      results.push(data.choices[0]?.message?.content ?? basicCleanup(truncated));
-    } catch {
-      results.push(basicCleanup(truncated));
+  for (let i = 0; i < rawTexts.length; i += CONCURRENCY) {
+    const batch = rawTexts.slice(i, i + CONCURRENCY);
+    const cleaned = await Promise.all(
+      batch.map((raw) => sieCleanOne(cfg, raw)),
+    );
+    for (let j = 0; j < cleaned.length; j++) {
+      results[i + j] = cleaned[j]!;
     }
   }
 
