@@ -126,9 +126,11 @@ function buildTensions(
   }));
 }
 
-/** Default voice profile for runtime-generated personas. */
-function defaultVoice(): VoiceProfile {
-  return { voiceId: "slng_default", pitch: 0, pace: 1.0 };
+/** Default voice profile for runtime-generated personas. The voiceId is keyed
+ *  on the persona id so resolveVoice() in the TTS adapter maps each generated
+ *  expert to a distinct Aura 2 voice instead of all sharing one. */
+function defaultVoice(id: string): VoiceProfile {
+  return { voiceId: `slng_${id}`, pitch: 0, pace: 1.0 };
 }
 
 /** Assemble the final PersonaRecord from all extracted + computed data. */
@@ -151,7 +153,7 @@ export function assemblePersonaRecord(
       color: CATEGORY_COLORS[category],
       initials: initials(name),
     },
-    voiceProfile: defaultVoice(),
+    voiceProfile: defaultVoice(id),
     expertiseTags: extracted.expertiseTags.slice(0, 8),
     naturalTensions: buildTensions(extracted),
     systemPrompt,

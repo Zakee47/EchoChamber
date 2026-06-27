@@ -81,27 +81,34 @@ export function createSlngTTS(
 async function parseResponse(res: Response): Promise<TTSResult> {
   const contentType = res.headers.get("content-type") ?? "audio/wav";
 
-  // If SLNG returns JSON with a URL, use that directly.
+  // Read the body exactly once. If SLNG returns JSON, decode it from the same
+  // buffer rather than calling res.json() (which would consume the stream and
+  // make the binary fallback below throw on an already-used body).
+  const arrayBuf = await res.arrayBuffer();
+
   if (contentType.includes("application/json")) {
-    const json: unknown = await res.json();
-    const obj = json as Record<string, unknown>;
-    if (typeof obj["url"] === "string") {
-      return {
-        url: obj["url"],
-        mimeType:
-          typeof obj["mime_type"] === "string"
-            ? obj["mime_type"]
-            : "audio/wav",
-        durationMs:
-          typeof obj["duration_ms"] === "number"
-            ? obj["duration_ms"]
-            : undefined,
-      };
+    try {
+      const obj = JSON.parse(Buffer.from(arrayBuf).toString("utf8")) as Record<
+        string,
+        unknown
+      >;
+      if (typeof obj["url"] === "string") {
+        return {
+          url: obj["url"],
+          mimeType:
+            typeof obj["mime_type"] === "string" ? obj["mime_type"] : "audio/wav",
+          durationMs:
+            typeof obj["duration_ms"] === "number"
+              ? obj["duration_ms"]
+              : undefined,
+        };
+      }
+    } catch {
+      /* not valid JSON — fall through to treating the bytes as audio */
     }
   }
 
   // Binary audio → data URI.
-  const arrayBuf = await res.arrayBuffer();
   const b64 = Buffer.from(arrayBuf).toString("base64");
   const mime = contentType.split(";")[0]?.trim() ?? "audio/wav";
   const durationMs = estimateDuration(arrayBuf.byteLength, mime);

@@ -14,7 +14,10 @@ import type { VoiceProfile } from "@echochamber/shared";
 
 const GEMINI_KEY = process.env["GEMINI_API_KEY"] ?? "";
 const SLNG_KEY = process.env["SLNG_API_KEY"] ?? "";
-const SLNG_URL = process.env["SLNG_BASE_URL"] ?? "https://api.slng.ai";
+// Let undefined flow through so createSlngTTS uses its own correct default
+// (…/v1/bridges/unmute/tts) rather than an old domain-only fallback.
+const SLNG_URL = process.env["SLNG_BASE_URL"] || undefined;
+const SLNG_MODEL = process.env["SLNG_MODEL"] || undefined;
 
 const mode =
   GEMINI_KEY && SLNG_KEY ? ("real" as const) : ("mock" as const);
@@ -37,6 +40,7 @@ async function main() {
   const tts = createTTSAdapter({
     slngApiKey: SLNG_KEY || undefined,
     slngBaseUrl: SLNG_URL,
+    slngModel: SLNG_MODEL,
     mode,
   });
 
