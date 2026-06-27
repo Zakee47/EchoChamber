@@ -5,13 +5,14 @@
 //  - assemble per-expert system prompts (sections 1-4,6,7) from source content
 //  - optional anti-hallucination guardrail pass
 //  - load the persona catalog from data/personas
-//
-// TODO(child:grounding): implement real SIE calls. Keep exports stable.
 
 import type {
   GroundingChunk,
   GroundingProvider,
 } from "@echochamber/shared";
+import { createSuperlinkedProvider } from "./superlinked.js";
+
+export type { GroundingProvider } from "@echochamber/shared";
 
 export interface GroundingConfig {
   superlinkedApiKey?: string;
@@ -41,7 +42,21 @@ export const mockGroundingProvider: GroundingProvider = {
   },
 };
 
+// ── Factory ─────────────────────────────────────────────────────────────────
+
 export function createGroundingProvider(cfg: GroundingConfig): GroundingProvider {
   if (cfg.mode === "mock" || !cfg.superlinkedApiKey) return mockGroundingProvider;
-  throw new Error("createGroundingProvider: real Superlinked SIE provider not implemented yet");
+  return createSuperlinkedProvider({
+    apiKey: cfg.superlinkedApiKey,
+    baseUrl: cfg.superlinkedBaseUrl ?? "https://api.superlinked.com",
+  });
 }
+
+// ── Re-exports from persona module ──────────────────────────────────────────
+
+export {
+  loadPersonas,
+  loadGroundedPersonas,
+  getPersona,
+  buildGroundingChunks,
+} from "./personas.js";
