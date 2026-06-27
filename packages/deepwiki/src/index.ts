@@ -1,16 +1,16 @@
 // @echochamber/deepwiki — runtime expert indexing (Tavily + Superlinked SIE).
 //
-// Flow: Tavily search (3-5 queries) → Tavily extract → SIE doc→markdown →
-// SIE structured output (PersonaRecord schema) → embed chunks → ready.
+// Flow: Tavily search (3-5 queries) -> Tavily extract -> SIE doc->markdown ->
+// SIE structured output (PersonaRecord schema) -> embed chunks -> ready.
 // Emits DeepWikiProgress events throughout; target < 60s.
-//
-// TODO(child:deepwiki): implement the real pipeline. Keep exports stable.
 
 import type {
   DeepWikiProgress,
   DeepWikiProvider,
   PersonaRecord,
 } from "@echochamber/shared";
+
+import { createRealProvider } from "./provider.js";
 
 export interface DeepWikiConfig {
   tavilyApiKey?: string;
@@ -22,6 +22,14 @@ export interface DeepWikiConfig {
 
 function slug(name: string): string {
   return name.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
 }
 
 // ── Mock provider (key-free; simulates staged progress) ─────────────────────
@@ -63,15 +71,9 @@ export const mockDeepWikiProvider: DeepWikiProvider = {
   },
 };
 
+// ── Factory ─────────────────────────────────────────────────────────────────
+
 export function createDeepWikiProvider(cfg: DeepWikiConfig): DeepWikiProvider {
   if (cfg.mode === "mock" || !cfg.tavilyApiKey) return mockDeepWikiProvider;
-  throw new Error("createDeepWikiProvider: real Tavily+SIE pipeline not implemented yet");
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
+  return createRealProvider(cfg);
 }
