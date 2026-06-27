@@ -12,7 +12,8 @@
     "typecheck": "tsc -b packages/shared packages/voice packages/grounding packages/deepwiki",
     "dev:server": "npm run dev --workspace apps/server",
     "dev:web": "npm run dev --workspace apps/web",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "smoke": "npm run smoke --workspace packages/voice"
   },
   "engines": {
     "node": ">=20"

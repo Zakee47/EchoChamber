@@ -2,9 +2,6 @@
 //
 // The orchestrator imports these factories and uses ECHO_ADAPTER_MODE to pick
 // real vs mock. The mocks below let the whole stack run with NO API keys.
-//
-// TODO(child:voice): implement the real factories against Gemini + SLNG.
-// Keep the public exports and the interface contracts stable.
 
 import type {
   LLMAdapter,
@@ -14,6 +11,10 @@ import type {
   TTSResult,
   VoiceProfile,
 } from "@echochamber/shared";
+
+import { createGeminiLLM } from "./gemini-llm.js";
+import { createGeminiSTT } from "./gemini-stt.js";
+import { createSlngTTS } from "./slng-tts.js";
 
 export interface VoiceConfig {
   geminiApiKey?: string;
@@ -58,21 +59,21 @@ export const mockTTS: TTSAdapter = {
   },
 };
 
-// ── Real factories (to be implemented by the voice child) ───────────────────
+// ── Real factories ──────────────────────────────────────────────────────────
 
 export function createLLMAdapter(cfg: VoiceConfig): LLMAdapter {
   if (cfg.mode === "mock" || !cfg.geminiApiKey) return mockLLM;
-  throw new Error("createLLMAdapter: real Gemini adapter not implemented yet");
+  return createGeminiLLM(cfg.geminiApiKey);
 }
 
 export function createSTTAdapter(cfg: VoiceConfig): STTAdapter {
   if (cfg.mode === "mock" || !cfg.geminiApiKey) return mockSTT;
-  throw new Error("createSTTAdapter: real Gemini STT adapter not implemented yet");
+  return createGeminiSTT(cfg.geminiApiKey);
 }
 
 export function createTTSAdapter(cfg: VoiceConfig): TTSAdapter {
   if (cfg.mode === "mock" || !cfg.slngApiKey) return mockTTS;
-  throw new Error("createTTSAdapter: real SLNG adapter not implemented yet");
+  return createSlngTTS(cfg.slngApiKey, cfg.slngBaseUrl);
 }
 
 function hash(s: string): number {
